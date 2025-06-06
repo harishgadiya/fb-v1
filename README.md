@@ -1,9 +1,9 @@
 # Test
 
-1. Display time zone on top bar.
-2. When create new Employee, display form validation message(under each field) instead of alert if some fields are empty
-3. Add client button and modal.
-4. Add client edit feature.
+- [x]  Display time zone on top bar.
+- [x]  When create new Employee, display form validation message(under each field) instead of alert if some fields are empty
+- [x]  Add client button and modal.
+- [x]  Add client edit feature.
 
 ## Required:
  Node.js 18+
