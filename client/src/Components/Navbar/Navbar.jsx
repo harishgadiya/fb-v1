@@ -23,6 +23,7 @@ import {
 import { getNotifications } from "../../redux/action/notification";
 import { getTasks } from "../../redux/action/task";
 import ChangePassword from "../../Pages/Auth/ChangePassword";
+import TimezoneDisplay from "../../utils/timezone";
 
 const blue = {
   100: "#DAECFF",
@@ -154,7 +155,7 @@ const Navbar = ({ setShowSidebar, showSidebar, open, setOpen }) => {
           <div className="flex gap-[20px] ">
             {/* icons */}
             <div className="sm:flex items-center hidden gap-[10px] ">
-
+            <TimezoneDisplay />
               {/* Notification */}
               {
                 loggedUser.role != 'employee' &&
