@@ -20,6 +20,7 @@ export const login = (userData, navigate) => async (dispatch) => {
     try {
         dispatch(start())
         const { data } = await api.login(userData)
+        console.log(data, '>>>>')
         const { token, ...result } = data.result
         Cookies.set('crm_profile', JSON.stringify(data.result))
         dispatch(loginReducer(result))
@@ -146,12 +147,12 @@ export const getUser = (userId) => async (dispatch) => {
         dispatch(error(err.message))
     }
 }
-export const createClient = (clientData) => async (dispatch) => {
+export const createClient = (clientData, setOpen) => async (dispatch) => {
     try {
         dispatch(start())
         const { data } = await api.createClient(clientData)
         dispatch(createClientReducer(data.result))
-        navigate('/clients')
+        setOpen(false)
         dispatch(end())
     } catch (err) {
         const message = err?.response?.data?.message || err?.message || "Something went wrong"
@@ -172,6 +173,21 @@ export const createEmployee = (employeeData, setOpen) => async (dispatch) => {
         dispatch(error(err.message))
     }
 }
+
+export const updateClient = (clientId, clientData, role, setOpen) => async (dispatch) => {
+    try {
+        dispatch(start())
+        const { data } = await api.updateUser(clientId, clientData)
+        dispatch(updateUserReducer(data.result))
+        dispatch(end())
+        setOpen(false)
+    } catch (err) {
+        const message = err?.response?.data?.message || err?.message || "Something went wrong"
+        toast.error(message)
+        dispatch(error(err.message))
+    }
+}
+
 export const updateRole = (userId, role) => async (dispatch) => {
     try {
         dispatch(start())

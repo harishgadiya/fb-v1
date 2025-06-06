@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { createEmployee } from "../../redux/action/user";
+import { createClient, createEmployee, updateClient } from "../../redux/action/user";
 import { useNavigate } from "react-router-dom";
 import Topbar from "./Topbar";
 import {
@@ -23,21 +23,18 @@ const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="down" ref={ref} {...props} />;
 });
 
-const CreateUser = ({ open, setOpen, scroll }) => {
+const CreateClient = ({ open, setOpen, scroll, isEdit = false }) => {
   //////////////////////////////////////// VARIABLES /////////////////////////////////////
-  const { isFetching } = useSelector((state) => state.user);
+  const { selectedClient, isFetching } = useSelector((state) => state.user);
   const dispatch = useDispatch();
-  const initialEmployeeState = {
+  const initialClientState = {
     firstName: "",
-    lastName: "",
     username: "",
-    password: "",
     phone: "",
     email: "",
   }
-
   //////////////////////////////////////// STATES /////////////////////////////////////
-  const [employeeData, setEmployeeData] = useState(initialEmployeeState);
+  const [clientData, setClientData] = useState(isEdit ? selectedClient : initialClientState);
   const [errors, setErrors] = useState({});
 
   //////////////////////////////////////// USE EFFECTS /////////////////////////////////////
@@ -45,14 +42,11 @@ const CreateUser = ({ open, setOpen, scroll }) => {
   //////////////////////////////////////// FUNCTIONS /////////////////////////////////////
   const handleSubmit = (e) => {
     e.preventDefault();
-    const { firstName, lastName, username, password, phone, email } = employeeData
-    // if (!firstName || !lastName || !username || !password || !phone  )
-    //   return alert("Make sure to provide all the fields")
+    const { firstName, username, phone, email } = clientData
     const newErrors = {};
-    if (!firstName) newErrors.firstName = "First name is required";
-    if (!lastName) newErrors.lastName = "Last name is required";
-    if (!username) newErrors.username = "Username is required";
-    if (!password) newErrors.password = "Password is required";
+    if (!firstName) newErrors.firstName = "Client Name is required";
+    if (!username) newErrors.username = "Client Username is required";
+    if (!email) newErrors.email = "Email is required";
     if (!phone) newErrors.phone = "Phone number is required";
 
     if (Object.keys(newErrors).length > 0) {
@@ -61,12 +55,16 @@ const CreateUser = ({ open, setOpen, scroll }) => {
     }
 
     setErrors({}); // Clear previous errors
-    dispatch(createEmployee(employeeData, setOpen));
-    setEmployeeData(initialEmployeeState)
+    if (isEdit) {
+        dispatch(updateClient(selectedClient._id, clientData, clientData?.role, setOpen));
+    } else {
+        dispatch(createClient(clientData, setOpen));
+    }
+    setClientData(initialClientState)
   };
 
   const handleChange = (field, value) => {
-    setEmployeeData((prevFilters) => ({ ...prevFilters, [field]: value, }));
+    setClientData((prevFilters) => ({ ...prevFilters, [field]: value, }));
     // Clear error for that field as user types
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
@@ -75,11 +73,11 @@ const CreateUser = ({ open, setOpen, scroll }) => {
 
   const handleClose = () => {
     setOpen(false);
-    setEmployeeData(initialEmployeeState)
+    setClientData(initialClientState)
     setErrors({})
   };
 
-  return (
+  return open && (
     <div>
       <Dialog
         scroll={scroll}
@@ -91,7 +89,7 @@ const CreateUser = ({ open, setOpen, scroll }) => {
         maxWidth="sm"
         aria-describedby="alert-dialog-slide-description">
         <DialogTitle className="flex items-center justify-between">
-          <div className="text-sky-400 font-primary">Add New Employee</div>
+          <div className="text-sky-400 font-primary">{isEdit ? 'Edit Client' : 'Add New Client'}</div>
           <div className="cursor-pointer" onClick={handleClose}>
             <PiXLight className="text-[25px]" />
           </div>
@@ -100,18 +98,21 @@ const CreateUser = ({ open, setOpen, scroll }) => {
           <div className="flex flex-col gap-2 p-3 text-gray-500 font-primary">
             <div className="text-xl flex justify-start items-center gap-2 font-normal">
               <PiNotepad size={23} />
-              <span>Employee Detials</span>
+              <span>Client Detail</span>
             </div>
             <Divider />
             <table className="mt-4">
               <tr>
-                <td className="pb-4 text-lg">First Name </td>
+                <td className="pb-4 text-lg">Client Name </td>
                 <td className="pb-4">
                   <TextField
                     size="small"
                     fullWidth
-                    value={employeeData.firstName}
-                    onChange={(e) => handleChange('firstName', e.target.value)}
+                    value={clientData.firstName}
+                    // key for Client Name should be clientName
+                    // I think we just copy pasted the code from CreateEmployee.jsx
+                    // and forgot to change the key
+                    onChange={(e) => handleChange('firstName', e.target.value)} 
                     error={!!errors.firstName}
                     helperText={errors.firstName}
                     FormHelperTextProps={{
@@ -121,31 +122,48 @@ const CreateUser = ({ open, setOpen, scroll }) => {
                 </td>
               </tr>
               <tr>
-                <td className="pb-4 text-lg">Last Name </td>
+                <td className="pb-4 text-lg">Client Username </td>
                 <td className="pb-4">
                   <TextField
                     size="small"
                     fullWidth
-                    value={employeeData.lastName}
-                    onChange={(e) => handleChange('lastName', e.target.value)}
-                    error={!!errors.lastName}
-                    helperText={errors.lastName}
+                    value={clientData.username}
+                    onChange={(e) => handleChange('username', e.target.value)}
+                    error={!!errors.username}
+                    helperText={errors.username}
                     FormHelperTextProps={{
                       sx: { marginLeft: 0 }  // removes left padding
                     }}
                   />
                 </td>
               </tr>
-              <tr>
+              {/* <tr>
                 <td className="pb-4 text-lg">User Name </td>
                 <td className="pb-4">
                   <TextField
                     size="small"
                     fullWidth
-                    value={employeeData.username}
+                    value={clientData.username}
                     onChange={(e) => handleChange('username', e.target.value)}
                     error={!!errors.username}
                     helperText={errors.username}
+                    FormHelperTextProps={{
+                      sx: { marginLeft: 0 }  // removes left padding
+                    }}
+                  />
+                </td>
+              </tr> */}
+              <tr>
+                <td className="flex items-start pt-2 text-lg">Phone </td>
+                <td className="pb-4">
+                  <TextField
+                    type="number"
+                    size="small"
+                    value={clientData.phone}
+                    onChange={(e) => handleChange("phone", e.target.value)}
+                    fullWidth
+                    error={!!errors.phone}
+                    helperText={errors.phone}
                     FormHelperTextProps={{
                       sx: { marginLeft: 0 }  // removes left padding
                     }}
@@ -158,45 +176,10 @@ const CreateUser = ({ open, setOpen, scroll }) => {
                   <TextField
                     size="small"
                     fullWidth
-                    placeholder="Optional"
-                    value={employeeData.email}
+                    value={clientData.email}
                     onChange={(e) => handleChange('email', e.target.value)}
                     error={!!errors.email}
                     helperText={errors.email}
-                    FormHelperTextProps={{
-                      sx: { marginLeft: 0 }  // removes left padding
-                    }}
-                  />
-                </td>
-              </tr>
-              <tr>
-                <td className="flex items-start pt-2 text-lg">Password </td>
-                <td className="pb-4">
-                  <TextField
-                    type="password"
-                    value={employeeData.password}
-                    onChange={(e) => handleChange("password", e.target.value)}
-                    size="small"
-                    fullWidth
-                    error={!!errors.password}
-                    helperText={errors.password}
-                    FormHelperTextProps={{
-                      sx: { marginLeft: 0 }  // removes left padding
-                    }}
-                  />
-                </td>
-              </tr>
-              <tr>
-                <td className="flex items-start pt-2 text-lg">Phone </td>
-                <td className="pb-4">
-                  <TextField
-                    type="number"
-                    size="small"
-                    value={employeeData.phone}
-                    onChange={(e) => handleChange("phone", e.target.value)}
-                    fullWidth
-                    error={!!errors.phone}
-                    helperText={errors.phone}
                     FormHelperTextProps={{
                       sx: { marginLeft: 0 }  // removes left padding
                     }}
@@ -227,4 +210,4 @@ const CreateUser = ({ open, setOpen, scroll }) => {
   );
 };
 
-export default CreateUser;
+export default CreateClient;
